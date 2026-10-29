@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý tin tức | Figureverse</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px;
+            background: #0b0b12;
+            color: #f4f4f8;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: 30px;
+        }
+
+        .muted {
+            color: #a6a6b8;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 7px;
+            border: 1px solid transparent;
+            border-radius: 9px;
+            padding: 12px 17px;
+            background: #8b5cf6;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.2s;
+            white-space: nowrap;
+        }
+
+        .button:hover {
+            background: #7043dc;
+            transform: translateY(-1px);
+        }
+
+        /* Nút thêm bài viết */
+        .button-add {
+            background: linear-gradient(135deg, #d946ef, #8b5cf6);
+            color: white;
+            padding: 14px 22px;
+            font-size: 15px;
+            box-shadow: 0 5px 18px rgba(139, 92, 246, 0.25);
+        }
+
+        .button-add:hover {
+            background: linear-gradient(135deg, #c026d3, #7043dc);
+            box-shadow: 0 7px 22px rgba(139, 92, 246, 0.4);
+        }
+
+        .button-secondary {
+            background: #292938;
+            border-color: #3b3b50;
+        }
+
+        .button-secondary:hover {
+            background: #38384c;
+        }
+
+        .button-danger {
+            background: #b42336;
+        }
+
+        .button-danger:hover {
+            background: #8f1728;
+        }
+
+        .message {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+        }
+
+        .success {
+            background: #123b2c;
+            color: #a7f3d0;
+        }
+
+        .error {
+            background: #451c25;
+            color: #fecdd3;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            background: #151520;
+            border: 1px solid #292938;
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th, td {
+            padding: 15px 14px;
+            border-bottom: 1px solid #292938;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            color: #bdbdd0;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        tbody tr:hover {
+            background: #1c1c2a;
+        }
+
+        tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .thumbnail {
+            display: block;
+            width: 76px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #292938;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 8px;
+            border-radius: 20px;
+            background: #292938;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .actions form {
+            margin: 0;
+        }
+
+        .empty {
+            padding: 36px;
+            text-align: center;
+            color: #a6a6b8;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 12px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .header-actions a {
+                flex: 1;
+            }
+
+            .button-add {
+                padding: 13px 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <header class="header">
+        <div>
+            <h1>Quản lý tin tức &amp; khuyến mãi</h1>
+            <div class="muted">
+                Quản lý bài viết, hình ảnh và chương trình nổi bật.
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <a class="button button-secondary"
+               th:href="@{/admin/products/homepage}">
+                ← Nội dung trang chủ
+            </a>
+
+            <a class="button button-add"
+               th:href="@{/admin/products/news/new}">
+                <span aria-hidden="true">＋</span>
+                Thêm bài viết
+            </a>
+        </div>
+    </header>
+
+    <div th:if="${successMessage}"
+         class="message success"
+         th:text="${successMessage}">
+    </div>
+
+    <div th:if="${errorMessage}"
+         class="message error"
+         th:text="${errorMessage}">
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Ảnh</th>
+                <th>Tiêu đề</th>
+                <th>Phân loại</th>
+                <th>Trạng thái</th>
+                <th>Nổi bật</th>
+                <th>Thao tác</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="article : ${articles}">
+                <td>
+                    <img th:if="${article.imageUrl != null
+                                  and !article.imageUrl.isEmpty()}"
+                         th:src="${article.imageUrl}"
+                         alt="Ảnh bài viết"
+                         class="thumbnail">
+
+                    <div th:unless="${article.imageUrl != null
+                                     and !article.imageUrl.isEmpty()}"
+                         class="thumbnail">
+                    </div>
+                </td>
+
+                <td>
+                    <strong th:text="${article.title}">Tiêu đề</strong>
+                    <div class="muted"
+                         style="margin-top: 6px; font-size: 12px"
+                         th:text="${article.slug}">
+                        duong-dan-bai-viet
+                    </div>
+                </td>
+
+                <td>
+                    <span class="badge"
+                          th:text="${article.type == null ? ''
+                            : (article.type.name() == 'PROMOTION'
+                            ? 'Khuyến mãi' : 'Tin tức')}">
+                        Tin tức
+                    </span>
+                </td>
+
+                <td>
+                    <span class="badge"
+                          th:text="${article.status == null ? ''
+                            : (article.status.name() == 'PUBLISHED'
+                            ? 'Đã xuất bản'
+                            : (article.status.name() == 'HIDDEN'
+                            ? 'Đã ẩn' : 'Bản nháp'))}">
+                        Bản nháp
+                    </span>
+                </td>
+
+                <td>
+                    <span th:if="${article.featured}"
+                          class="badge">★ Nổi bật</span>
+                    <span th:unless="${article.featured}"
+                          class="muted">—</span>
+                </td>
+
+                <td>
+                    <div class="actions">
+                        <a class="button button-secondary"
+                           th:href="@{/admin/products/news/edit/{id}(id=${article.id})}">
+                            Sửa
+                        </a>
+
+                        <form th:action="@{/admin/products/news/delete/{id}(id=${article.id})}"
+                              method="post"
+                              onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?')">
+
+                            <button class="button button-danger"
+                                    type="submit">
+                                Xóa
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(articles)}">
+                <td colspan="6" class="empty">
+                    Chưa có bài viết nào.<br><br>
+                    Nhấn nút <strong>＋ Thêm bài viết</strong>
+                    ở phía trên để bắt đầu.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="muted footer">
+        Figureverse · Trung tâm quản trị nội dung
+    </div>
+
+</div>
+</body>
+</html>

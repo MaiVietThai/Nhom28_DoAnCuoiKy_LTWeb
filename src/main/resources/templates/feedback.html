@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đánh giá & phản hồi | Figureverse</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body{background:#090b16;color:#eee}.panel{background:#121629;border:1px solid #303653;border-radius:16px;padding:24px;margin-bottom:24px}
+        .form-control,.form-select{background:#0b0e1d;color:#fff;border-color:#343a58}.form-control:focus,.form-select:focus{background:#0b0e1d;color:#fff}
+        .muted{color:#9aa3c4}.feedback-item{border:1px solid #303653;background:#0b0e1d;border-radius:10px;padding:16px}
+    </style>
+</head>
+<body>
+<main class="container py-5" style="max-width:900px">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <a th:href="@{/}" class="btn btn-outline-light">← Cửa hàng</a>
+        <a th:href="@{/orders}" class="btn btn-outline-info">Lịch sử đơn hàng</a>
+    </div>
+    <section class="panel">
+        <h1 class="h3 mt-1">Đánh giá / góp ý</h1>
+        <p class="muted">Chia sẻ trải nghiệm để Figureverse cải thiện sản phẩm và dịch vụ.</p>
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        <form method="post" th:action="@{/feedback}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="category">Loại phản hồi</label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option>Đánh giá sản phẩm</option>
+                        <option>Giao hàng và đóng gói</option>
+                        <option>Chăm sóc khách hàng</option>
+                        <option>Góp ý website</option>
+                        <option>Khiếu nại</option>
+                        <option selected>Góp ý chung</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="rating">Mức độ hài lòng</label>
+                    <select class="form-select" id="rating" name="rating" required>
+                        <option value="5">★★★★★ - Rất hài lòng</option>
+                        <option value="4">★★★★ - Hài lòng</option>
+                        <option value="3">★★★ - Bình thường</option>
+                        <option value="2">★★ - Chưa hài lòng</option>
+                        <option value="1">★ - Không hài lòng</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="message">Nội dung phản hồi</label>
+                    <textarea class="form-control" id="message" name="message" rows="5" maxlength="1200" required placeholder="Hãy mô tả trải nghiệm hoặc vấn đề bạn gặp phải..."></textarea>
+                    <div class="form-text muted">Tối đa 1200 ký tự. Không nhập mật khẩu hoặc thông tin thanh toán nhạy cảm.</div>
+                </div>
+                <div class="col-12"><button class="btn btn-info" type="submit">Gửi phản hồi</button></div>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2 class="h4 mb-3">Phản hồi của tôi</h2>
+        <div th:if="${#lists.isEmpty(myFeedbacks)}" class="muted">Bạn chưa gửi phản hồi nào.</div>
+        <div class="feedback-item mb-3" th:each="f : ${myFeedbacks}">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                <div><strong th:text="${f.category}">Góp ý chung</strong><div class="muted small" th:text="${#temporals.format(f.createdAt,'dd/MM/yyyy HH:mm')}"></div></div>
+                <div class="text-warning" th:text="${f.rating} + '/5 ⭐'"></div>
+            </div>
+            <p class="mb-2" style="white-space:pre-wrap" th:text="${f.message}"></p>
+            <span class="badge bg-secondary" th:text="${f.status}">Mới</span>
+            <div class="alert alert-info mt-3 mb-0" th:if="${f.adminReply != null and !#strings.isEmpty(f.adminReply)}">
+                <strong>Phản hồi từ cửa hàng:</strong><div style="white-space:pre-wrap" th:text="${f.adminReply}"></div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

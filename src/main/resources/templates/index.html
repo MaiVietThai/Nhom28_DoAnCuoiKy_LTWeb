@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#090b16">
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>FIGUREVERSE | Thế giới mô hình Anime</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap"
+          rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        [hidden] {
+            display: none !important;
+        }
+
+        .figure-tools {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tool-icon {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            padding: 7px;
+            border: 0;
+            background: transparent;
+            color: #f3f1ff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color .2s, transform .2s;
+        }
+
+        .tool-icon:hover {
+            color: #4ef5ec;
+            transform: translateY(-2px);
+        }
+
+        .tool-icon svg {
+            width: 25px;
+            height: 25px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .tool-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 19px;
+            height: 19px;
+            padding: 0 5px;
+            border-radius: 20px;
+            background: #f04455;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .search-panel {
+            padding: 14px 0;
+            background: #0c1020;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .search-panel-inner {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-panel input {
+            min-width: 0;
+            flex: 1;
+            color: #fff;
+            background: #151a2d;
+            border: 1px solid #353b56;
+        }
+
+        .search-panel input:focus {
+            color: #fff;
+            background: #151a2d;
+            border-color: #4ef5ec;
+            box-shadow: 0 0 0 .2rem rgba(78,245,236,.12);
+        }
+
+        .search-panel input::placeholder {
+            color: #929ab4;
+        }
+
+        .tool-close {
+            border: 1px solid #343a54;
+            background: transparent;
+            color: #fff;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        .tool-close:hover {
+            border-color: #4ef5ec;
+            color: #4ef5ec;
+        }
+
+        .account-name {
+            color: #e8e8fa;
+            font-size: 13px;
+        }
+
+        .account-name strong {
+            color: #4ef5ec;
+            overflow-wrap: anywhere;
+        }
+
+        .product-column[hidden] {
+            display: none !important;
+        }
+
+        .wishlist.selected {
+            color: #ff4f88 !important;
+            border-color: #ff4f88 !important;
+        }
+
+        .add-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .add-button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 991px) {
+            .figure-tools {
+                justify-content: flex-start;
+                margin-top: 15px;
+            }
+
+            .account-name {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .search-panel-inner {
+                align-items: stretch;
+            }
+
+            .tool-close {
+                padding: 7px 9px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- THANH THÔNG BÁO -->
+<div class="announcement">
+    <span class="pulse-dot"></span>
+    <span th:text="${homeContent.announcement}">
+        FIGUREVERSE // COLLECT YOUR UNIVERSE
+    </span>
+    <span class="announcement-right">
+        HÀNG SƯU TẦM · ĐÓNG GÓI CHUẨN COLLECTOR
+    </span>
+</div>
+
+<!-- THANH ĐIỀU HƯỚNG -->
+<nav class="navbar navbar-expand-lg navbar-dark site-nav">
+    <div class="container nav-shell">
+
+        <a class="navbar-brand brand-mark" th:href="@{/}">
+            <span class="brand-symbol">N</span>
+            <span>
+                FIGURE<span class="brand-accent">VERSE</span>
+                <small>ANIME COLLECTOR STORE</small>
+            </span>
+        </a>
+
+        <a class="admin-link"
+           th:href="@{/admin/products/homepage}"
+           sec:authorize="hasRole('ADMIN')">
+            ✎ Sửa trang chủ
+        </a>
+
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNav"
+                aria-label="Mở menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+
+            <div class="navbar-nav mx-auto nav-links">
+                <a class="nav-link active" href="#home">Trang chủ</a>
+                <a class="nav-link" href="#collections">Bộ sưu tập</a>
+                <a class="nav-link" href="#products">Sản phẩm</a>
+                <a class="nav-link" href="#news">Tin tức & Khuyến mãi</a>
+                <a class="nav-link" href="#about">Về Figure</a>
+            </div>
+
+            <div class="nav-actions figure-tools">
+
+                <!-- Tìm kiếm -->
+                <button type="button"
+                        class="tool-icon"
+                        id="searchToggle"
+                        aria-label="Tìm kiếm sản phẩm"
+                        title="Tìm kiếm"
+                        aria-expanded="false"
+                        aria-controls="searchPanel">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="10.8" cy="10.8" r="7.2"></circle>
+                        <path d="m16.2 16.2 5 5"></path>
+                    </svg>
+                </button>
+
+                <!-- Yêu thích -->
+                <a th:href="@{/wishlist}"
+                   sec:authorize="hasRole('CUSTOMER')"
+                   class="tool-icon"
+                   aria-label="Sản phẩm yêu thích"
+                   title="Yêu thích">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M20.8 8.8c0 5.2-8.8 10.1-8.8 10.1S3.2 14 3.2 8.8A4.7 4.7 0 0 1 12 6.2a4.7 4.7 0 0 1 8.8 2.6Z"></path>
+                    </svg>
+                    <span class="tool-badge" id="wishlistCount">0</span>
+                </a>
+
+                <!-- Giỏ hàng -->
+                <a th:href="@{/cart}"
+                   sec:authorize="hasRole('CUSTOMER')"
+                   class="tool-icon"
+                   aria-label="Giỏ hàng"
+                   title="Giỏ hàng">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 8h14l1 13H4L5 8Z"></path>
+                        <path d="M9 9V6a3 3 0 0 1 6 0v3"></path>
+                    </svg>
+                    <span class="tool-badge"
+                          id="cartCount"
+                          th:text="${cartCount != null ? cartCount : 0}">0</span>
+                </a>
+
+                <!-- Chưa đăng nhập -->
+                <a class="btn btn-outline-neon"
+                   th:href="@{/login}"
+                   sec:authorize="isAnonymous()">
+                    Đăng nhập <span>↗</span>
+                </a>
+
+                <a class="admin-link"
+                   th:href="@{/register}"
+                   sec:authorize="isAnonymous()">
+                    Đăng ký
+                </a>
+
+                <!-- Đã đăng nhập -->
+                <div sec:authorize="isAuthenticated()"
+                     class="d-flex align-items-center gap-2 flex-wrap">
+
+                    <span class="account-name">
+                        Xin chào,
+                        <strong sec:authentication="name">Tài khoản</strong>
+                    </span>
+
+                    <a class="admin-link"
+                       th:href="@{/admin}"
+                       sec:authorize="hasRole('ADMIN')">
+                        Quản trị
+                    </a>
+
+                    <a class="admin-link"
+                       th:href="@{/orders}"
+                       sec:authorize="hasRole('CUSTOMER')">
+                        Đơn hàng
+                    </a>
+
+                    <a class="admin-link" th:href="@{/feedback}" sec:authorize="hasRole('CUSTOMER')">Góp ý</a>
+
+                    <form th:action="@{/logout}"
+                          method="post"
+                          class="d-inline">
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-outline-neon">
+                            Đăng xuất
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- KHUNG TÌM KIẾM -->
+<div class="search-panel" id="searchPanel" hidden>
+    <div class="container search-panel-inner">
+        <input id="productSearch"
+               type="search"
+               class="form-control"
+               placeholder="Nhập tên mô hình, nhân vật hoặc bộ truyện..."
+               aria-label="Tìm kiếm sản phẩm">
+
+        <button type="button" class="tool-close" id="searchClose">
+            Đóng
+        </button>
+    </div>
+</div>
+
+<!-- TIN TỨC & KHUYẾN MÃI -->
+<section class="news-section" id="news">
+    <div class="container">
+
+        <!-- Banner lớn -->
+        <div class="news-hero">
+            <div class="news-hero-content">
+                <span class="news-eyebrow">
+                    <span class="news-dot"></span>
+                    FIGUREVERSE / NEWS & OFFERS
+                </span>
+
+                <h1>
+                    TIN TỨC
+                    <span>&amp; KHUYẾN MÃI</span>
+                </h1>
+
+                <p>
+                    Khám phá những mô hình mới, cập nhật xu hướng anime
+                    và đừng bỏ lỡ các ưu đãi dành riêng cho cộng đồng
+                    người sưu tầm.
+                </p>
+
+                <a href="#news-list" class="news-button">
+                    KHÁM PHÁ NGAY <span>↗</span>
+                </a>
+
+                <div class="news-hero-meta">
+                    <span>NEWS / 2026</span>
+                    <span>MADE FOR COLLECTORS</span>
+                </div>
+            </div>
+
+            <div class="news-hero-art" aria-hidden="true">
+                <div class="news-art-ring news-ring-one"></div>
+                <div class="news-art-ring news-ring-two"></div>
+                <div class="news-art-glow"></div>
+                <div class="news-art-symbol">✦</div>
+                <div class="news-art-main">N<span>+</span></div>
+                <div class="news-art-caption">COLLECT YOUR UNIVERSE</div>
+                <div class="news-art-chip">FIGUREVERSE // 001</div>
+            </div>
+        </div>
+
+        <!-- Danh sách tin -->
+        <div class="news-list" id="news-list">
+            <div class="news-heading">
+                <div>
+                    <div class="news-subtitle">WHAT'S HAPPENING?</div>
+                    <h2>TIN MỚI <span>&amp; NỔI BẬT</span></h2>
+                </div>
+
+                <div class="news-heading-note">
+                    THE LATEST FROM FIGUREVERSE
+                </div>
+            </div>
+
+            <div class="news-grid">
+
+                <!-- Tin 1 -->
+                <article class="news-card">
+                    <div class="news-card-visual news-visual-new">
+                        <span class="news-card-index">01 / NEWS</span>
+                        <span class="news-card-icon">✦</span>
+                        <span class="news-card-tag">NEW ARRIVAL</span>
+                    </div>
+
+                    <div class="news-card-body">
+                        <div class="news-category">TIN TỨC SẢN PHẨM</div>
+                        <h3>Khám phá thế giới mô hình anime</h3>
+                        <p>
+                            Tìm kiếm nhân vật yêu thích và bổ sung những
+                            mẫu figure độc đáo cho bộ sưu tập của bạn.
+                        </p>
+                        <a th:href="@{/products}" class="news-read-more">
+                            KHÁM PHÁ SẢN PHẨM <span>↗</span>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Tin 2 -->
+                <article class="news-card">
+                    <div class="news-card-visual news-visual-sale">
+                        <span class="news-card-index">02 / OFFER</span>
+                        <span class="news-card-icon">%</span>
+                        <span class="news-card-tag">SPECIAL OFFER</span>
+                    </div>
+
+                    <div class="news-card-body">
+                        <div class="news-category">KHUYẾN MÃI</div>
+                        <h3>Ưu đãi dành cho người sưu tầm</h3>
+                        <p>
+                            Ghé thăm danh mục sản phẩm để cập nhật các
+                            lựa chọn mua sắm và chương trình ưu đãi.
+                        </p>
+                        <a th:href="@{/products}" class="news-read-more">
+                            XEM SẢN PHẨM <span>↗</span>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Tin 3 -->
+                <article class="news-card">
+                    <div class="news-card-visual news-visual-collector">
+                        <span class="news-card-index">03 / GUIDE</span>
+                        <span class="news-card-icon">龍</span>
+                        <span class="news-card-tag">COLLECTOR LIFE</span>
+                    </div>
+
+                    <div class="news-card-body">
+                        <div class="news-category">GÓC SƯU TẦM</div>
+                        <h3>Tạo không gian trưng bày của riêng bạn</h3>
+                        <p>
+                            Sắp xếp những nhân vật yêu thích thành một
+                            góc trưng bày mang đậm dấu ấn cá nhân.
+                        </p>
+                        <a href="#about" class="news-read-more">
+                            KHÁM PHÁ THÊM <span>↗</span>
+                        </a>
+                    </div>
+                </article>
+
+            </div>
+
+            <div class="news-footer-line">
+                <span>FIGUREVERSE / COMMUNITY</span>
+                <span>YOUR COLLECTION. YOUR STORY.</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HERO -->
+<header class="hero" id="home">
+    <div class="hero-grid"></div>
+    <div class="hero-orb orb-one"></div>
+    <div class="hero-orb orb-two"></div>
+
+    <div class="container hero-content">
+        <div class="hero-copy">
+            <div class="eyebrow">
+                <span class="eyebrow-line"></span>
+                <span th:text="${homeContent.heroEyebrow}">
+            THE NEXT LEVEL OF COLLECTING
+        </span>
+            </div>
+
+            <h1>
+        <span th:text="${homeContent.heroTitle}">
+            YOUR ANIME. YOUR UNIVERSE.
+        </span>
+            </h1>
+
+            <p class="hero-desc"
+               th:text="${homeContent.heroDescription}">
+                Không chỉ là mô hình. Đó là những huyền thoại bạn mang về
+                thế giới của mình — từ Dragon Ball, One Piece đến Naruto
+                và hơn thế nữa.
+            </p>
+
+            <div class="hero-buttons">
+                <a th:href="${homeContent.heroButtonLink}"
+                   class="btn btn-neon">
+            <span th:text="${homeContent.heroButtonText}">
+                Khám phá bộ sưu tập
+            </span>
+                    <span>↗</span>
+                </a>
+
+                <a href="#collections" class="btn btn-ghost">
+                    Khám phá vũ trụ <span>↓</span>
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div>
+                    <strong>01<span>/</span>∞</strong>
+                    <small>YOUR COLLECTION</small>
+                </div>
+                <div>
+                    <strong>100<span>%</span></strong>
+                    <small>ANIME ENERGY</small>
+                </div>
+                <div>
+                    <strong>LEVEL <span>UP</span></strong>
+                    <small>EVERY DAY</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-art" aria-label="Minh họa bộ sưu tập mô hình anime">
+            <div class="art-ring ring-a"></div>
+            <div class="art-ring ring-b"></div>
+            <div class="art-cross">✳</div>
+            <div class="art-label label-top">FIGURE / 001</div>
+
+            <div class="figure-stage">
+                <div class="figure-glow"></div>
+                <div class="figure-emoji">⚡</div>
+                <div class="figure-title">
+                    POWER<br><span>UNLEASHED</span>
+                </div>
+            </div>
+
+            <div class="art-chip chip-left">
+                <span>✦</span>
+                <div>
+                    <b>LEGENDARY</b>
+                    <small>CHARACTER SERIES</small>
+                </div>
+            </div>
+
+            <div class="art-chip chip-right">
+                <span>◈</span>
+                <div>
+                    <b>LIMITED VIBES</b>
+                    <small>COLLECTOR EDITION</small>
+                </div>
+            </div>
+
+            <div class="art-label label-bottom">
+                EST. FOR FANS // SINCE ALWAYS
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-bottom-line">
+        <span>SCROLL TO EXPLORE</span>
+        <span>DRAGON BALL · ONE PIECE · NARUTO · AND MORE</span>
+        <span>NF—2026</span>
+    </div>
+</header>
+
+<!-- BỘ SƯU TẬP -->
+<section class="series-section" id="collections">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <div class="eyebrow">
+                    <span class="eyebrow-line"></span>
+                    <span th:text="${homeContent.collectionEyebrow}">
+                PICK YOUR WORLD
+            </span>
+                </div>
+
+                <h2>
+            <span th:text="${homeContent.collectionTitle}">
+                CHOOSE YOUR UNIVERSE
+            </span>
+                </h2>
+            </div>
+
+            <p th:text="${homeContent.collectionDescription}">
+                Mỗi vũ trụ, một huyền thoại.
+                Chọn series bạn yêu thích.
+            </p>
+        </div>
+
+        <div class="series-grid">
+            <a class="series-card dragon"
+               href="#products"
+               data-series="dragon">
+                <span class="series-number">SERIES_01</span>
+                <span class="series-symbol">龍</span>
+                <div>
+                    <small>THE SAIYAN SAGA</small>
+                    <h3>DRAGON BALL</h3>
+                    <span class="series-cta">KHÁM PHÁ <b>↗</b></span>
+                </div>
+            </a>
+
+            <a class="series-card pirate"
+               href="#products"
+               data-series="onepiece">
+                <span class="series-number">SERIES_02</span>
+                <span class="series-symbol">☠</span>
+                <div>
+                    <small>THE GRAND LINE</small>
+                    <h3>ONE PIECE</h3>
+                    <span class="series-cta">KHÁM PHÁ <b>↗</b></span>
+                </div>
+            </a>
+
+            <a class="series-card ninja"
+               href="#products"
+               data-series="naruto">
+                <span class="series-number">SERIES_03</span>
+                <span class="series-symbol">忍</span>
+                <div>
+                    <small>THE SHINOBI WORLD</small>
+                    <h3>NARUTO</h3>
+                    <span class="series-cta">KHÁM PHÁ <b>↗</b></span>
+                </div>
+            </a>
+
+            <a class="series-card allstars"
+               href="#products"
+               data-series="all">
+                <span class="series-number">SERIES_∞</span>
+                <span class="series-symbol">✦</span>
+                <div>
+                    <small>MORE WORLDS TO DISCOVER</small>
+                    <h3>ALL STARS</h3>
+                    <span class="series-cta">XEM TẤT CẢ <b>↗</b></span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- DANH SÁCH SẢN PHẨM -->
+<main class="products-section" id="products">
+    <div class="container">
+
+        <div class="section-head product-heading">
+            <div>
+                <div class="eyebrow">
+                    <span class="eyebrow-line"></span>
+                    <span th:text="${homeContent.productEyebrow}">
+                THE COLLECTOR'S DROP
+            </span>
+                </div>
+
+                <h2>
+            <span th:text="${homeContent.productTitle}">
+                FEATURED FIGURES
+            </span>
+                </h2>
+
+                <p class="section-subtitle"
+                   th:text="${homeContent.productDescription}">
+                    Những nhân vật xứng đáng có một vị trí trong bộ sưu tập của bạn.
+                </p>
+            </div>
+        </div>
+
+        <div class="filter-row" id="filterRow">
+            <button class="filter-pill active" data-filter="all">
+                Tất cả sản phẩm
+                <span th:text="${#lists.size(products)}">0</span>
+            </button>
+            <button class="filter-pill" data-filter="dragon">Dragon Ball</button>
+            <button class="filter-pill" data-filter="onepiece">One Piece</button>
+            <button class="filter-pill" data-filter="naruto">Naruto</button>
+            <button class="filter-pill" data-filter="other">Khác</button>
+        </div>
+
+        <div class="row g-4 product-grid"
+             id="productGrid"
+             th:if="${!#lists.isEmpty(products)}">
+
+            <div class="col-12 col-sm-6 col-xl-4 product-column"
+                 th:each="product,iter : ${products}"
+                 th:attr="data-id=${product.id},
+                          data-name=${#strings.toLowerCase(product.name != null ? product.name : '')},
+                          data-description=${#strings.toLowerCase(product.description != null ? product.description : '')},
+                          data-category=${#strings.toLowerCase(product.category != null and product.category.name != null ? product.category.name : '')}">
+
+                <article class="product-card h-100">
+
+                    <div class="product-visual">
+                        <div class="product-index"
+                             th:text="${'NF / ' + #numbers.formatInteger(iter.count, 3)}">
+                            NF / 001
+                        </div>
+
+                        <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+                             th:src="${product.imageUrl}"
+                             th:alt="${product.name}"
+                             loading="lazy"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+
+                        <div class="product-fallback"
+                             th:style="${product.imageUrl != null and !product.imageUrl.isEmpty()} ? 'display:none' : ''">
+                            <span class="fallback-orbit">✦</span>
+                            <span class="fallback-kanji"
+                                  th:text="${iter.count % 3 == 1 ? '龍' : (iter.count % 3 == 2 ? '海' : '忍')}">龍</span>
+                            <small>FIGUREVERSE</small>
+                        </div>
+
+                        <span class="product-badge"
+                              th:text="${iter.count % 3 == 0 ? 'FAN FAVORITE' : (iter.count % 3 == 1 ? 'HOT DROP' : 'COLLECTOR PICK')}">
+                            HOT DROP
+                        </span>
+
+                        <!-- Yêu thích được lưu bằng localStorage -->
+                        <button class="wishlist"
+                                sec:authorize="hasRole('CUSTOMER')"
+                                type="button"
+                                th:classappend="${wishlistIds != null and wishlistIds.contains(product.id)} ? 'selected' : ''"
+                                th:text="${wishlistIds != null and wishlistIds.contains(product.id)} ? '♥' : '♡'"
+                                th:attr="data-product-id=${product.id},
+                                         aria-label=${'Thêm ' + product.name + ' vào yêu thích'}"
+                                aria-pressed="false">
+                            ♡
+                        </button>
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-meta">
+                            <span th:text="${product.category != null and product.category.name != null ? product.category.name : 'Chưa phân loại'}">
+                                ANIME FIGURE
+                            </span>
+                            <span class="stock-dot">● CÓ SẴN</span>
+                        </div>
+
+                        <h3 th:text="${product.name}">Tên mô hình</h3>
+
+                        <p class="product-description"
+                           th:text="${product.description != null ? product.description : ''}">
+                            Mô tả sản phẩm
+                        </p>
+
+                        <div class="product-bottom">
+                            <div>
+                                <small>GIÁ THAM KHẢO</small>
+                                <div class="price"
+                                     th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    599.000 ₫
+                                </div>
+                            </div>
+
+                            <!-- Tài khoản đã đăng nhập -->
+                            <form sec:authorize="hasRole('CUSTOMER')"
+                                  th:action="@{/cart/add/{id}(id=${product.id})}"
+                                  method="post"
+                                  class="add-cart-form m-0">
+
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <input type="hidden"
+                                       name="quantity"
+                                       value="1">
+
+                                <button class="add-button"
+                                        type="submit"
+                                        th:attr="aria-label=${'Thêm ' + product.name + ' vào giỏ hàng'}">
+                                    +
+                                </button>
+                            </form>
+
+                            <!-- Khách chưa đăng nhập -->
+                            <a sec:authorize="isAnonymous()"
+                               class="add-button"
+                               th:href="@{/login}"
+                               aria-label="Đăng nhập để mua hàng"
+                               title="Đăng nhập để mua">
+                                ↗
+                            </a>
+
+
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div class="empty-state"
+             id="emptyState"
+             th:if="${#lists.isEmpty(products)}">
+            <span>✧</span>
+            <h3>VŨ TRỤ ĐANG CHỜ BẠN</h3>
+            <p>Chưa có mô hình nào trong danh mục. Hãy quay lại sau nhé.</p>
+        </div>
+
+        <div class="no-results" id="noResults" hidden>
+            Không tìm thấy mô hình phù hợp. Thử từ khóa khác nhé.
+        </div>
+
+        <div class="catalog-footer">
+            <span>
+                SHOWING
+                <b id="visibleCount" th:text="${#lists.size(products)}">0</b>
+                COLLECTIBLE ITEMS
+            </span>
+            <span>MORE FIGURES. MORE STORIES. <b>MORE YOU.</b></span>
+        </div>
+    </div>
+</main>
+
+<!-- GIỚI THIỆU -->
+<section class="collector-banner" id="about">
+    <div class="container collector-inner">
+        <div class="collector-icon">✧</div>
+
+        <div>
+            <div class="eyebrow"
+                 th:text="${homeContent.aboutEyebrow}">
+                BUILT FOR FANS, POWERED BY PASSION
+            </div>
+
+            <h2 th:text="${homeContent.aboutTitle}">
+                YOUR SHELF. YOUR STORY.
+            </h2>
+
+            <p th:text="${homeContent.aboutDescription}">
+                Khởi đầu bộ sưu tập của bạn ngay hôm nay —
+                một nhân vật, một câu chuyện, một thế giới.
+            </p>
+        </div>
+
+        <a href="#products" class="btn btn-neon">
+            Tìm nhân vật của bạn ↗
+        </a>
+    </div>
+</section>
+
+<!-- CHÂN TRANG -->
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <a class="brand-mark" th:href="@{/}">
+            <span class="brand-symbol">N</span>
+            <span>
+                FIGURE<span class="brand-accent">VERSE</span>
+                <small>ANIME COLLECTOR STORE</small>
+            </span>
+        </a>
+
+        <p th:text="${homeContent.footerTagline}">
+            Made for the ones who never stopped dreaming.
+        </p>
+        <span>© 2026 FIGUREVERSE <i>·</i> A FAN'S UNIVERSE</span>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    (() => {
+        'use strict';
+
+        const cards = [...document.querySelectorAll('.product-column')];
+        const search = document.getElementById('productSearch');
+        const filters = [...document.querySelectorAll('.filter-pill')];
+        const seriesLinks = [...document.querySelectorAll('[data-series]')];
+        const count = document.getElementById('visibleCount');
+        const noResults = document.getElementById('noResults');
+
+        const searchToggle = document.getElementById('searchToggle');
+        const searchPanel = document.getElementById('searchPanel');
+        const searchClose = document.getElementById('searchClose');
+
+        const wishlistCount = document.getElementById('wishlistCount');
+
+        let activeFilter = 'all';
+
+        // Đọc danh sách ID sản phẩm yêu thích.
+        function readWishlist() {
+            try {
+                const data = JSON.parse(
+                    localStorage.getItem('figureWishlist') || '[]'
+                );
+
+                return Array.isArray(data) ? data.map(String) : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        // Đọc thông tin sản phẩm đã lưu cho trang yêu thích.
+        function readWishlistProducts() {
+            try {
+                const data = JSON.parse(
+                    localStorage.getItem('figureWishlistProducts') || '{}'
+                );
+
+                return data && typeof data === 'object' && !Array.isArray(data)
+                    ? data
+                    : {};
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function saveWishlistProducts(products) {
+            try {
+                localStorage.setItem(
+                    'figureWishlistProducts',
+                    JSON.stringify(products)
+                );
+            } catch (error) {
+                console.warn('Không thể lưu thông tin sản phẩm yêu thích.', error);
+            }
+        }
+
+        function saveWishlist(ids) {
+            try {
+                localStorage.setItem('figureWishlist', JSON.stringify(ids));
+            } catch (error) {
+                console.warn('Không thể lưu danh sách yêu thích.', error);
+            }
+        }
+
+        // Cập nhật số lượng và trạng thái trái tim.
+        function updateWishlistUI() {
+            const ids = readWishlist();
+
+            if (wishlistCount) {
+                wishlistCount.textContent = ids.length;
+            }
+
+            document.querySelectorAll('.wishlist[data-product-id]').forEach(button => {
+                const id = String(button.dataset.productId);
+                const selected = ids.includes(id);
+
+                button.classList.toggle('selected', selected);
+                button.textContent = selected ? '♥' : '♡';
+                button.setAttribute('aria-pressed', String(selected));
+            });
+        }
+
+        // Lấy dữ liệu sản phẩm từ thẻ HTML.
+        function productDataFromCard(card) {
+            if (!card) {
+                return null;
+            }
+
+            const image = card.querySelector('.product-visual img');
+
+            return {
+                id: String(card.dataset.id || ''),
+                name: card.querySelector('.product-info h3')?.textContent?.trim() || 'Sản phẩm',
+                description: card.querySelector('.product-description')?.textContent?.trim() || '',
+                category: card.querySelector('.product-meta span')?.textContent?.trim() || '',
+                priceText: card.querySelector('.price')?.textContent?.trim() || 'Liên hệ',
+                image: image?.getAttribute('src') || ''
+            };
+        }
+
+        // Chuyển nội dung thành chuỗi an toàn khi đưa vào HTML.
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, character => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[character]);
+        }
+
+        // Hiển thị trang yêu thích bằng dữ liệu đã lưu trong trình duyệt.
+        function showWishlistPage() {
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get('view') !== 'wishlist') {
+                return;
+            }
+
+            document.getElementById('wishlistView')?.remove();
+
+            document.querySelectorAll(
+                '.hero, .series-section, .products-section, .collector-banner, .site-footer, .search-panel'
+            ).forEach(element => {
+                element.hidden = true;
+            });
+
+            const main = document.createElement('main');
+            main.id = 'wishlistView';
+            main.className = 'products-section';
+            main.style.minHeight = '65vh';
+
+            main.innerHTML = `
+                <div class="container">
+                    <div class="section-head">
+                        <div>
+                            <div class="eyebrow">YOUR COLLECTION</div>
+                            <h2>SẢN PHẨM <span class="gradient-text">YÊU THÍCH</span></h2>
+                        </div>
+                        <a class="btn btn-ghost" href="/">← Tiếp tục mua sắm</a>
+                    </div>
+
+                    <div id="wishlistPageItems" class="row g-4"></div>
+
+                    <p id="wishlistPageEmpty" class="empty-state" hidden>
+                        Bạn chưa thêm sản phẩm nào vào danh sách yêu thích.
+                    </p>
+                </div>
+            `;
+
+            const footer = document.querySelector('footer.site-footer');
+            document.body.insertBefore(main, footer);
+
+            const ids = readWishlist();
+            const products = readWishlistProducts();
+            const container = main.querySelector('#wishlistPageItems');
+            let renderedCount = 0;
+
+            ids.forEach(id => {
+                const item = products[id];
+
+                if (!item) {
+                    return;
+                }
+
+                renderedCount++;
+
+                const column = document.createElement('div');
+                column.className = 'col-12 col-sm-6 col-xl-4';
+
+                const imageMarkup = item.image
+                    ? `<img src="${escapeHtml(item.image)}"
+                            alt="${escapeHtml(item.name)}"
+                            style="width:100%;height:220px;object-fit:contain">`
+                    : `<div class="product-fallback">
+                           <span class="fallback-kanji">✦</span>
+                           <small>FIGUREVERSE</small>
+                       </div>`;
+
+                column.innerHTML = `
+                    <article class="product-card h-100">
+                        <div class="product-visual">
+                            ${imageMarkup}
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-meta">
+                                <span>${escapeHtml(item.category)}</span>
+                            </div>
+
+                            <h3>${escapeHtml(item.name)}</h3>
+                            <p>${escapeHtml(item.description)}</p>
+
+                            <div class="product-bottom">
+                                <strong class="price">${escapeHtml(item.priceText)}</strong>
+                                <button type="button"
+                                        class="btn btn-outline-neon remove-wishlist"
+                                        data-id="${escapeHtml(id)}">
+                                    Bỏ yêu thích
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                `;
+
+                column.querySelector('.remove-wishlist').addEventListener('click', () => {
+                    const updatedIds = readWishlist().filter(itemId => itemId !== id);
+
+                    saveWishlist(updatedIds);
+                    updateWishlistUI();
+                    showWishlistPage();
+                });
+
+                container.appendChild(column);
+            });
+
+            const emptyMessage = main.querySelector('#wishlistPageEmpty');
+            emptyMessage.hidden = renderedCount > 0;
+        }
+
+        // Bật hoặc tắt khung tìm kiếm.
+        function toggleSearch(show) {
+            if (!searchPanel || !searchToggle) {
+                return;
+            }
+
+            searchPanel.hidden = !show;
+            searchToggle.setAttribute('aria-expanded', String(show));
+
+            if (show) {
+                search?.focus();
+                searchPanel.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }
+        }
+
+        searchToggle?.addEventListener('click', () => {
+            toggleSearch(searchPanel.hidden);
+        });
+
+        searchClose?.addEventListener('click', () => {
+            toggleSearch(false);
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                toggleSearch(false);
+            }
+        });
+
+        // Phân loại sản phẩm theo tên, mô tả và danh mục.
+        function classify(card) {
+            const value = (
+                `${card.dataset.name || ''} ` +
+                `${card.dataset.description || ''} ` +
+                `${card.dataset.category || ''}`
+            ).toLocaleLowerCase('vi');
+
+            if (/dragon ball|goku|vegeta|saiyan|songoku/.test(value)) {
+                return 'dragon';
+            }
+
+            if (/one piece|luffy|zoro|nami|pirate|hải tặc/.test(value)) {
+                return 'onepiece';
+            }
+
+            if (/naruto|sasuke|kakashi|shinobi|ninja/.test(value)) {
+                return 'naruto';
+            }
+
+            return 'other';
+        }
+
+        // Tìm kiếm và lọc sản phẩm.
+        function render() {
+            const query = (search?.value || '')
+                .trim()
+                .toLocaleLowerCase('vi');
+
+            let shown = 0;
+
+            cards.forEach(card => {
+                const value = (
+                    `${card.dataset.name || ''} ` +
+                    `${card.dataset.description || ''} ` +
+                    `${card.dataset.category || ''}`
+                ).toLocaleLowerCase('vi');
+
+                const matchesSearch = !query || value.includes(query);
+
+                const matchesFilter =
+                    activeFilter === 'all' ||
+                    classify(card) === activeFilter;
+
+                const visible = matchesSearch && matchesFilter;
+
+                card.hidden = !visible;
+
+                if (visible) {
+                    shown++;
+                }
+            });
+
+            if (count) {
+                count.textContent = shown;
+            }
+
+            if (noResults) {
+                noResults.hidden = shown !== 0;
+            }
+        }
+
+        // Nút lọc theo danh mục.
+        filters.forEach(button => {
+            button.addEventListener('click', () => {
+                filters.forEach(item => {
+                    item.classList.toggle('active', item === button);
+                });
+
+                activeFilter = button.dataset.filter || 'all';
+                render();
+            });
+        });
+
+        // Chọn bộ sưu tập từ các thẻ lớn.
+        seriesLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                activeFilter = link.dataset.series === 'all'
+                    ? 'all'
+                    : link.dataset.series;
+
+                filters.forEach(button => {
+                    button.classList.toggle(
+                        'active',
+                        button.dataset.filter === activeFilter
+                    );
+                });
+
+                render();
+            });
+        });
+
+        search?.addEventListener('input', render);
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        // Thêm hoặc bỏ sản phẩm yêu thích (đồng bộ với Spring session qua AJAX).
+        document.querySelectorAll('.wishlist[data-product-id]').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const id = String(button.dataset.productId);
+                try {
+                    const headers = {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    };
+                    if (csrfToken && csrfHeader) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+                    const response = await fetch('/wishlist/toggle/' + encodeURIComponent(id), {
+                        method: 'POST',
+                        headers: headers
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        button.classList.toggle('selected', !!data.inWishlist);
+                        button.textContent = data.inWishlist ? '♥' : '♡';
+                        button.setAttribute('aria-pressed', String(!!data.inWishlist));
+                        if (wishlistCount && data.count !== undefined) {
+                            wishlistCount.textContent = data.count;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Lỗi cập nhật yêu thích:', err);
+                }
+            });
+        });
+
+        // Không tự tăng số giỏ hàng ở trình duyệt.
+        // Bộ đếm giỏ hàng phải do Spring Boot cung cấp qua cartCount.
+
+        updateWishlistUI();
+        render();
+        showWishlistPage();
+    })();
+</script>
+
+</body>
+</html>

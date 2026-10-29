@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý sản phẩm | FIGUREVERSE</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 28px;
+            font-family: Arial, sans-serif;
+            background: #f4f6fa;
+            color: #202638;
+        }
+
+        .container { max-width: 1200px; margin: auto; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        h1 { margin: 0 0 8px; font-size: 28px; }
+        .muted { color: #667085; }
+
+        .button {
+            display: inline-block;
+            border: 0;
+            border-radius: 8px;
+            padding: 11px 15px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        .primary { background: #202638; color: white; }
+        .secondary { background: #e8ecf3; color: #202638; }
+        .danger { background: #fee4e2; color: #b42318; }
+
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 15px #2026380a;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th, td {
+            padding: 13px 10px;
+            border-bottom: 1px solid #eaecf0;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th { color: #667085; font-size: 13px; }
+
+        .product-image {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f2f4f7;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .success { background: #dcfae6; color: #067647; }
+        .error { background: #fee4e2; color: #b42318; }
+
+        .status { font-weight: bold; }
+        .active { color: #067647; }
+        .inactive { color: #b42318; }
+
+        form { margin: 0; }
+
+        .checkbox-cell {
+            width: 44px;
+            text-align: center;
+        }
+
+        .product-checkbox,
+        #selectAll {
+            width: 17px;
+            height: 17px;
+            cursor: pointer;
+            accent-color: #202638;
+        }
+
+        .bulk-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .bulk-left,
+        .bulk-right {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .selection-count {
+            font-size: 14px;
+            color: #667085;
+        }
+
+        .selection-count strong {
+            color: #202638;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 14px; }
+            .panel { padding: 12px; }
+            h1 { font-size: 23px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="header">
+        <div>
+            <h1>Quản lý sản phẩm</h1>
+            <div class="muted">FIGUREVERSE · Khu vực quản trị</div>
+        </div>
+
+        <div class="actions">
+            <a class="button secondary" th:href="@{/}">
+                Về cửa hàng
+            </a>
+
+            <a class="button secondary" th:href="@{/admin/products/homepage}">
+                ✎ Sửa trang chủ
+            </a>
+
+            <a class="button primary" th:href="@{/admin/products/new}">
+                + Thêm sản phẩm
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${successMessage}"
+         class="alert success"
+         th:text="${successMessage}">
+    </div>
+
+    <div th:if="${errorMessage}"
+         class="alert error"
+         th:text="${errorMessage}">
+    </div>
+
+    <div class="panel">
+
+        <!-- Thanh công cụ xóa hàng loạt -->
+        <div class="bulk-toolbar">
+
+            <div class="bulk-left">
+                <button type="button"
+                        class="button secondary"
+                        id="selectAllButton">
+                    Chọn tất cả
+                </button>
+
+                <button type="button"
+                        class="button secondary"
+                        id="deselectAllButton">
+                    Bỏ chọn tất cả
+                </button>
+
+                <span class="selection-count">
+                    Đã chọn <strong id="selectedCount">0</strong> sản phẩm
+                </span>
+            </div>
+
+            <div class="bulk-right">
+                <button type="submit"
+                        form="bulkDeleteForm"
+                        class="button danger"
+                        id="bulkDeleteButton"
+                        disabled>
+                    Xóa sản phẩm đã chọn
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Form xóa nhiều sản phẩm -->
+        <form id="bulkDeleteForm"
+              method="post"
+              th:action="@{/admin/products/delete-selected}"
+              onsubmit="return confirmBulkDelete();">
+
+            <!-- CSRF token được Spring Security/Thymeleaf tự bổ sung
+                 khi cấu hình tích hợp CSRF với Thymeleaf phù hợp. -->
+
+            <table>
+                <thead>
+                <tr>
+                    <th class="checkbox-cell">
+                        <input type="checkbox"
+                               id="selectAll"
+                               aria-label="Chọn tất cả sản phẩm">
+                    </th>
+                    <th>Ảnh</th>
+                    <th>Mã SKU</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Danh mục</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="p : ${products}">
+                    <td class="checkbox-cell">
+                        <input type="checkbox"
+                               class="product-checkbox"
+                               name="ids"
+                               th:value="${p.id}"
+                               th:attr="aria-label=|Chọn ${p.name}|">
+                    </td>
+
+                    <td>
+                        <img class="product-image"
+                             th:if="${p.imageUrl != null and !p.imageUrl.isBlank()}"
+                             th:src="${p.imageUrl}"
+                             th:alt="${p.name}">
+
+                        <span th:if="${p.imageUrl == null or p.imageUrl.isBlank()}"
+                              class="muted">
+                            Chưa có ảnh
+                        </span>
+                    </td>
+
+                    <td th:text="${p.sku}"></td>
+
+                    <td th:text="${p.name}"></td>
+
+                    <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+
+                    <td th:text="${p.category != null ? p.category.name : 'Chưa phân loại'}"></td>
+
+                    <td>
+                        <span th:if="${p.active}"
+                              class="status active">
+                            Đang bán
+                        </span>
+
+                        <span th:unless="${p.active}"
+                              class="status inactive">
+                            Ngừng bán
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="actions">
+
+                            <a class="button secondary"
+                               th:href="@{/admin/products/edit/{id}(id=${p.id})}">
+                                Sửa
+                            </a>
+
+                            <!-- Form xóa riêng từng sản phẩm -->
+                            <form method="post"
+                                  th:action="@{/admin/products/delete/{id}(id=${p.id})}"
+                                  onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?');">
+
+                                <button class="button danger" type="submit">
+                                    Xóa
+                                </button>
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+
+                <tr th:if="${#lists.isEmpty(products)}">
+                    <td colspan="8" class="muted">
+                        Chưa có sản phẩm nào.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const selectAllButton = document.getElementById('selectAllButton');
+    const deselectAllButton = document.getElementById('deselectAllButton');
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkDeleteButton = document.getElementById('bulkDeleteButton');
+    const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+
+    function getProductCheckboxes() {
+        return Array.from(
+            document.querySelectorAll('.product-checkbox')
+        );
+    }
+
+    function updateSelection() {
+        const checkboxes = getProductCheckboxes();
+        const selected = checkboxes.filter(cb => cb.checked).length;
+
+        selectedCount.textContent = selected;
+        bulkDeleteButton.disabled = selected === 0;
+
+        selectAllCheckbox.checked =
+            checkboxes.length > 0 && selected === checkboxes.length;
+
+        selectAllCheckbox.indeterminate =
+            selected > 0 && selected < checkboxes.length;
+    }
+
+    function setAllCheckboxes(checked) {
+        getProductCheckboxes().forEach(cb => {
+            cb.checked = checked;
+        });
+
+        updateSelection();
+    }
+
+    selectAllCheckbox.addEventListener('change', function () {
+        setAllCheckboxes(this.checked);
+    });
+
+    selectAllButton.addEventListener('click', function () {
+        setAllCheckboxes(true);
+    });
+
+    deselectAllButton.addEventListener('click', function () {
+        setAllCheckboxes(false);
+    });
+
+    getProductCheckboxes().forEach(cb => {
+        cb.addEventListener('change', updateSelection);
+    });
+
+    function confirmBulkDelete() {
+        const selected = getProductCheckboxes()
+            .filter(cb => cb.checked);
+
+        if (selected.length === 0) {
+            alert('Vui lòng chọn ít nhất một sản phẩm.');
+            return false;
+        }
+
+        return confirm(
+            'Bạn có chắc chắn muốn xóa ' +
+            selected.length +
+            ' sản phẩm đã chọn? Thao tác này không thể hoàn tác.'
+        );
+    }
+
+    // Khởi tạo trạng thái ban đầu
+    updateSelection();
+</script>
+
+</body>
+</html>

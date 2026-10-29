@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#56f4e7" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#9a7bff" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#090b16" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cyber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#56f4e7"/>
+      <stop offset="100%" stop-color="#9a7bff"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="#0d1021"/>
+  <circle cx="200" cy="180" r="140" fill="url(#glow)"/>
+  <circle cx="200" cy="180" r="110" fill="none" stroke="#9a7bff" stroke-width="1.5" stroke-dasharray="6,6" opacity="0.6"/>
+  <circle cx="200" cy="180" r="85" fill="none" stroke="#56f4e7" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Stylized Figure Icon -->
+  <g transform="translate(200, 170)" fill="none" stroke="url(#cyber)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Head -->
+    <circle cx="0" cy="-45" r="22"/>
+    <!-- Horns / Anime Hair Accent -->
+    <path d="M-15,-60 Q-25,-75 -10,-85 Q-5,-70 5,-65"/>
+    <path d="M15,-60 Q25,-75 10,-85 Q5,-70 -5,-65"/>
+    <!-- Body -->
+    <path d="M-28,-15 L-35,35 L35,35 L28,-15 Z"/>
+    <!-- Chest emblem -->
+    <polygon points="0,-5 12,12 -12,12" fill="#56f4e7" opacity="0.7"/>
+    <!-- Legs -->
+    <path d="M-18,35 L-22,80 L-10,82"/>
+    <path d="M18,35 L22,80 L10,82"/>
+    <!-- Arms -->
+    <path d="M-28,-10 L-48,15 L-38,30"/>
+    <path d="M28,-10 L48,15 L38,30"/>
+  </g>
+  
+  <text x="200" y="320" text-anchor="middle" font-family="'Orbitron', sans-serif, system-ui" font-weight="700" font-size="16" fill="#56f4e7" letter-spacing="3">FIGUREVERSE</text>
+  <text x="200" y="345" text-anchor="middle" font-family="'Be Vietnam Pro', sans-serif, system-ui" font-size="11" fill="#7a82a6" letter-spacing="2">OFFICIAL COLLECTIBLE</text>
+</svg>
